@@ -9,19 +9,19 @@ BleGamepad bleGamepad;
 // BLUE = 2;
 // ORANGE = 4;
 
-int buttonCount = 5;
-String buttons[5] = {"GREEN", "RED", "YELLOW", "BLUE", "ORANGE"};
-int buttonPinMapping[5] = {18, 19, 21, 2, 4};
-int buttonStates[5] = {0, 0, 0, 0, 0};
-int buttonControllerMapping[5] = {BUTTON_1, BUTTON_2, BUTTON_3, BUTTON_4, BUTTON_5};
+int buttonCount = 9;
+String buttons[9] = {"BLUE", "GREEN", "RED", "YELLOW", "ORANGE", "STRUM_DOWN", "STRUM_UP", "STAR_POWER", "PLUS"};
+int buttonPinMapping[9] = {18, 19, 5, 17, 16, 13, 14, 27, 26};
+int buttonStates[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+int buttonControllerMapping[9] = {BUTTON_1, BUTTON_2, BUTTON_3, BUTTON_4, BUTTON_5, BUTTON_6, BUTTON_7, BUTTON_8, BUTTON_9};
 
-int WAMMY_BAR = 35;
+int WAMMY_BAR = 33;
 
 
 void setup() {
 
   //Set all buttons to pulldown
-  for (int i = 0; i < 5; i++){
+  for (int i = 0; i < buttonCount; i++){
     pinMode(buttonPinMapping[i], INPUT_PULLDOWN);
   }
   
@@ -52,6 +52,12 @@ void loop() {
 
 void handleButton(int index){
   int input = digitalRead(buttonPinMapping[index]);
+
+  //The input of the strum buttons is inversed
+  if (buttons[index] == "STRUM_UP" || buttons[index] == "STRUM_DOWN"){
+    input = (input == 0) ? 1 : 0;
+  }
+  
   if (buttonStates[index] > input){ //Stored state is pressed, read state is released
     bleGamepad.release(buttonControllerMapping[index]);
   } else if (buttonStates[index] < input) { //Stored state is released, read state is pressed
