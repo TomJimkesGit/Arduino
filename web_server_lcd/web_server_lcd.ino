@@ -2,6 +2,13 @@
 
 // include the library code:
 #include <LiquidCrystal.h>
+#include <WiFi.h>
+#include <ArduinoHttpClient.h>
+
+https://github.com/arduino-libraries/ArduinoHttpClient/blob/master/examples/CustomHeader/CustomHeader.ino
+https://github.com/arduino-libraries/ArduinoHttpClient/blob/master/examples/CustomHeader/CustomHeader.ino
+https://developers.home-assistant.io/docs/api/rest/
+
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(13, 12, 14, 27, 26, 25);
@@ -25,6 +32,7 @@ int current_index = 0;
 int menu_depth = 0;
 
 void setup() {
+  Serial.begin(115200);
   lcd.begin(16, 2);
   write_main_menu();
 
@@ -32,6 +40,10 @@ void setup() {
   pinMode(down_button_pin, INPUT_PULLDOWN);
   pinMode(enter_button_pin, INPUT_PULLDOWN);
   pinMode(back_button_pin, INPUT_PULLDOWN);
+
+  //Wifi setup
+  connect_to_wifi();
+  get_lamps();
 }
 
 void loop() {
@@ -140,4 +152,54 @@ void write_main_menu(){
 
   lcd.setCursor(2, 1);
   lcd.print(lamps[current_index + 1]);
+}
+
+
+//--------------- web request code ----------------
+
+char* ha_access_token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3NTc2OGNhMDg0ZWE0ODNjYjE1YmQxNjQ0OTgxNWIwZiIsImlhdCI6MTY2ODcxMjkyOSwiZXhwIjoxOTg0MDcyOTI5fQ.OGfaiL675QN8dvqFq0tgYespo-5A2w2ZsFd-6tmlvZA";
+char* ha_api_endpoint = "http://homeassistant.local/api/";
+int ha_api_port = 8123;
+
+const char* ssid = "Moker Wifi";
+const char* password = "500PilsAUB!";
+
+void connect_to_wifi(){
+  Serial.begin(115200); 
+
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting");
+  while(WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to WiFi network with IP Address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void get_lamps(){
+
+  WiFiClient wifi;
+  if(WiFi.status()== WL_CONNECTED){
+      HttpClient client = HttpClient(wifi, ha_api_endpoint, ha_api_port);
+      client.beginRequest();
+      client.get("/");
+      client.sendHeader("Authorization", ha_access_token);
+      client.sendHeader("Content-Type", "application/json");
+      client.endRequest();
+
+      int statusCode = client.responseStatusCode();
+      String response = client.responseBody();
+    
+      Serial.print("GET Status code: ");
+      Serial.println(statusCode);
+      Serial.print("GET Response: ");
+      Serial.println(response);
+      
+  }
+}
+
+String format_request_string(){
+  
 }
