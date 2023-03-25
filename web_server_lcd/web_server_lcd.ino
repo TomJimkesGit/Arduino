@@ -3,12 +3,7 @@
 // include the library code:
 #include <LiquidCrystal.h>
 #include <WiFi.h>
-#include <ArduinoHttpClient.h>
-
-https://github.com/arduino-libraries/ArduinoHttpClient/blob/master/examples/CustomHeader/CustomHeader.ino
-https://github.com/arduino-libraries/ArduinoHttpClient/blob/master/examples/CustomHeader/CustomHeader.ino
-https://developers.home-assistant.io/docs/api/rest/
-
+#include <HTTPClient.h>
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(13, 12, 14, 27, 26, 25);
@@ -161,11 +156,10 @@ char* ha_access_token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI
 char* ha_api_endpoint = "http://homeassistant.local/api/";
 int ha_api_port = 8123;
 
-const char* ssid = "Moker Wifi";
-const char* password = "500PilsAUB!";
+const char* ssid = "Moker WiFi_ExtraWiFi2G";
+const char* password = "500PilsAUB!2G";
 
 void connect_to_wifi(){
-  Serial.begin(115200); 
 
   WiFi.begin(ssid, password);
   Serial.println("Connecting");
@@ -182,6 +176,25 @@ void get_lamps(){
 
   WiFiClient wifi;
   if(WiFi.status()== WL_CONNECTED){
+    HTTPClient http;
+    char* serverPath = "http://homeassistant.local:8123/api/";
+    http.begin(serverPath);
+    int httpResponseCode = http.GET();
+      
+      if (httpResponseCode>0) {
+        Serial.print("HTTP Response code: ");
+        Serial.println(httpResponseCode);
+        String payload = http.getString();
+        Serial.println(payload);
+      }
+      else {
+        Serial.print("Error code: ");
+        Serial.println(httpResponseCode);
+      }
+      // Free resources
+      http.end();
+    
+    /*
       HttpClient client = HttpClient(wifi, ha_api_endpoint, ha_api_port);
       client.beginRequest();
       client.get("/");
@@ -196,7 +209,7 @@ void get_lamps(){
       Serial.println(statusCode);
       Serial.print("GET Response: ");
       Serial.println(response);
-      
+      */
   }
 }
 
